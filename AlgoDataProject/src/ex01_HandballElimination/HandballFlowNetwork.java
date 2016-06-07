@@ -11,40 +11,39 @@ public class HandballFlowNetwork {
 	private int[][] capacities;
 	private int[][] flows;
 	private int[][] residuals;
-
-	public HandballFlowNetwork(ArrayList<String> input) {
-
-		generateFTeams(input, 2);
+	private int qSize = 0;
+	
+	public HandballFlowNetwork(ArrayList<String> input, int indexTeamToEvaluate) {
+		generateFTeams(input, indexTeamToEvaluate);
 		System.out.println("fTeams");
 		printTable(fTeams);
 
-		// Antal kampe mellem fTeams
-		int fGames = 0;
-		for (int[] team : fTeams) {
-			fGames += team[1];
-		}
-
-		// Antal point F holdene fordeler imellem sig
-		int fPoints = fGames * 2;
-		System.out.println("\nAntal kampe i F{}: " + fGames + " Antal point i F{}: " + fPoints);
-
-		// Antal vertices inkl. source og sink
-		int vertices = 8; // Brug beregning i stedet! Antal kombinationer +
+		qSize = numberOfCombinations(fTeams.length);
+		// Antal vertices inkl. source og sink index 0=source index 1=sink
+		int vertices = 2+qSize+fTeams.length; // Brug beregning i stedet! Antal kombinationer +
 							// antal hold + source + sink.
 		capacities = new int[vertices][vertices];
 
-		insertEdges();
-		System.out.println("Capacities");
-		printTable(capacities);
+		//Antal kampe mellem fTeams //Q-sættet...
+		int fGames = insertEdges();
+		//System.out.println("Capacities");
+		//printTable(capacities);
 
 		flows = new int[vertices][vertices]; // flow(i, j) = 0 i starten
 		residuals = new int[vertices][vertices];
 
-		System.out.println("MaxFlow: " + maxFlow());
+		int maxFlow = maxFlow();
+		System.out.println("P: " + fGames + " MaxFlow: " + maxFlow);
+		
+		if(maxFlow >= fGames){
+			System.out.println("Team har stadig en chance for at vinde");
+		}else{
+			System.out.println("Team er elimineret");
+		}
 	}
 
 	// Løber capacities igennem, og optimerer flow, hvis muligt...
-	// Mindste fællesnævner bestemmer hvor meget der kan sendes ad path.
+	//Augmented path viser en path fra source->sink. 
 	public int maxFlow(){
 		updateResidualNetwork();
 		int [] augmentingPath = findAugmentingPath();
@@ -53,6 +52,7 @@ public class HandballFlowNetwork {
 			int current = 0;
 			//1. while: Findes mindste fællesnavner for flow
 			while(augmentingPath[current] != 0){
+				//Mindste fællesnævner bestemmer hvor meget der kan sendes ad path.
 				min = Math.min(min, residuals[augmentingPath[current + 1]][augmentingPath[current]]);
 				current++;
 			}
@@ -175,44 +175,57 @@ public class HandballFlowNetwork {
 		}
 	}
 
-	private void insertEdges() {
+	private int insertEdges() {
 		// INSÆTTER EDGES
 		// i < antal kombinationer/Q sættet efterfulgt af j < antal hold/F
 		// sættet
 		// source = capacities[0]
 		// sink = capacities[capacities.length-1]
 		// Edges fra source til alle i Q (kombinationer), dvs. capacities[0][Qi]
-		int index = 1; // Qi's placering
+		int index = 2; // Qi's placering
+		int sourceIndex=0;
+		int fGames = 0;
 		// Indsæt ikke begge stedet. Placering betyder retning!
 		for (int i = 0; i < fTeams.length; i++) { // løber teams igennem
 
 			int pointsToGive = 0;
 			// kamp starter ved index 3 - kan ikke spille imod sig selv
-			for (int j = i + 3; j < capacities.length - 3; j++) { 
+			for (int j = i + qSize; j < capacities.length - qSize; j++) { 
 				pointsToGive = fTeams[i][j] * 2;
 				// Edges source -> Q(index)
-				capacities[0][index] = pointsToGive;
-				// capacities[index][0] = pointsToGive;
-
+				capacities[sourceIndex][index] = pointsToGive;
+				capacities[index][sourceIndex] = pointsToGive;
+				fGames += pointsToGive;
+				
 				// Edges Q(index) -> Fi og Fj.
 				capacities[index][i + 4] = pointsToGive;
-				// capacities[i + 4][index] = pointsToGive;
+				//capacities[i + 4][index] = pointsToGive;
 				capacities[index][j + 2] = pointsToGive;
-				// capacities[j + 2][index] = pointsToGive;
-
+				//capacities[j + 2][index] = pointsToGive;
 				index++;
 			}
-
 		}
-		int sinkIndex = capacities.length - 1;
-		index = sinkIndex - fTeams.length;
+		int sinkIndex = 1;
+		index = capacities.length - fTeams.length;
 		// Edges Fi -> sink (indsæt i for-løkken ovenfor)
 		for (int k = 0; k < fTeams.length; k++) {
-			capacities[index++][sinkIndex] = fTeams[k][fTeams[0].length - 1];
-			// capacities[sinkIndex][index++] = fTeams[k][fTeams[0].length - 1];
+			capacities[index][sinkIndex] = fTeams[k][fTeams[0].length - 1];
+			capacities[sinkIndex][index] = fTeams[k][fTeams[0].length - 1];
+			index++;
 		}
+		return fGames;
 	}
-
+	
+	private int numberOfCombinations(int n){
+		int fN = factorial(n); 
+		int result = fN/(factorial(n-2)*factorial(2));
+		return result;
+	}
+	public static int factorial(int f) {
+	    return ((f == 0) ? 1 : f * factorial(f - 1));
+	}  
+	
+	
 	private void printTable(int[][] table) {
 		for (int i = 0; i < table.length; i++) {
 			for (int j = 0; j < table[i].length; j++) {

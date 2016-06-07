@@ -12,6 +12,7 @@ public class App {
 		while(scan.hasNextLine()){
 			input += scan.nextLine();
 		}
+		scan.close();
 		System.out.println(input);
 		ArrayList<String> teams = new ArrayList<>();
 		String team = "";
@@ -27,11 +28,20 @@ public class App {
 			}
 			
 		}
-		System.out.println("ArrayList:");
-		for(String s : teams){
-			System.out.println(s);
+		for(int i = 0; i < teams.size(); i++){
+			String candidate = teams.get(i);
+			System.out.println("\nTeam " + candidate.substring(0, candidate.indexOf(" ")));
+			new HandballFlowNetwork(new ArrayList<String>(teams), i);
 		}
-		HandballFlowNetwork graph = new HandballFlowNetwork(teams);
-		
+		/*
+		System.out.println("Team Atlanta");
+		new HandballFlowNetwork(new ArrayList<String>(teams), 0);
+		System.out.println("\nTeam Philadelphia");
+		new HandballFlowNetwork(new ArrayList<String>(teams), 1);
+		System.out.println("\nTeam New York");
+		new HandballFlowNetwork(new ArrayList<String>(teams), 2);
+		System.out.println("\nTeam Montreal");
+		new HandballFlowNetwork(new ArrayList<String>(teams), 3);
+		*/
 	}
 }
