@@ -28,7 +28,7 @@ public class GettingGold {
 			gold = gold + 1;
 		}
 		// udforsker kun udfra felter som er sikre, dvs ikke i nær
-		if (current != '#' && current != 'T' && isSafe(i, j)) {
+		if (current != '#' && isSafe(i, j)) {
 			if (i > 1 && !visited[i - 1][j]) {
 				gold = gettingGold(i - 1, j, gold);
 			}
