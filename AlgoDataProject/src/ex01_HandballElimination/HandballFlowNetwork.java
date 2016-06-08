@@ -11,23 +11,30 @@ public class HandballFlowNetwork {
 	private int[][] capacities;
 	private int[][] flows;
 	private int[][] residuals;
+	//Antal kombinationer
 	private int qSize = 0;
+	//Antal hold
+	private int fSize = 0; 
 	
 	public HandballFlowNetwork(ArrayList<String> input, int indexTeamToEvaluate) {
 		generateFTeams(input, indexTeamToEvaluate);
-		System.out.println("fTeams");
-		printTable(fTeams);
+		//System.out.println("fTeams");
+		//printTable(fTeams);
 
+		//Antal kampe mellem fTeams Q-sættet...
 		qSize = numberOfCombinations(fTeams.length);
-		// Antal vertices inkl. source og sink index 0=source index 1=sink
-		int vertices = 2+qSize+fTeams.length; // Brug beregning i stedet! Antal kombinationer +
-							// antal hold + source + sink.
+		System.out.println("qSize: " + qSize);
+		System.out.println("fSize: " + fSize);
+		//Source+sink+antal kombinationer+antal hold
+		int vertices = 2+qSize+fSize; 
+		
+		System.out.println("Antal vertices: " + vertices);
 		capacities = new int[vertices][vertices];
-
-		//Antal kampe mellem fTeams //Q-sættet...
+		
+		//Samlede points fra source -> Qi
 		int fGames = insertEdges();
-		//System.out.println("Capacities");
-		//printTable(capacities);
+		System.out.println("Capacities");
+		printTable(capacities);
 
 		flows = new int[vertices][vertices]; // flow(i, j) = 0 i starten
 		residuals = new int[vertices][vertices];
@@ -147,18 +154,21 @@ public class HandballFlowNetwork {
 
 	private void generateFTeams(ArrayList<String> input, int evaluateIndex) {
 		String teamToEvaluate = input.remove(evaluateIndex);
-
+		fSize = input.size();
+		
 		String[] teamArr = teamToEvaluate.split(" ");
 		int points = Integer.parseInt(teamArr[1]);
 		int gamesLeft = Integer.parseInt(teamArr[2]);
 		int maxPoints = points + (gamesLeft * 2);
 
-		fTeams = new int[input.size()][6];
+		//fTeams arrayet har udover de andre hold, 3 felter; 
+		//samlede points, kampe tilbage og points de må få
+		fTeams = new int[input.size()][fSize + 3];
 		for (int i = 0; i < input.size(); i++) {
 			String[] s = input.get(i).split(" ");
 			int j = 1;
-			int substraction = 1; // bruges når man skipper et hold (der som
-									// evalueres)
+			// Bruges når man skipper et hold (der som evalueres)
+			int substraction = 1; 
 			while (j < s.length) {
 				if (j == evaluateIndex + 3) { // springer data om
 												// evalueringsteamet over
@@ -168,7 +178,8 @@ public class HandballFlowNetwork {
 				}
 				j++;
 			}
-			int remainingPoints = maxPoints - fTeams[i][0];
+			
+			int remainingPoints = maxPoints - fTeams[i][0] ;
 			// Indsætter hvor mange point holdet må få på det sidste index i
 			// arrayet
 			fTeams[i][fTeams[0].length - 1] = remainingPoints;
@@ -177,41 +188,40 @@ public class HandballFlowNetwork {
 
 	private int insertEdges() {
 		// INSÆTTER EDGES
-		// i < antal kombinationer/Q sættet efterfulgt af j < antal hold/F
-		// sættet
 		// source = capacities[0]
-		// sink = capacities[capacities.length-1]
-		// Edges fra source til alle i Q (kombinationer), dvs. capacities[0][Qi]
-		int index = 2; // Qi's placering
-		int sourceIndex=0;
+		// sink = capacities[1]
+		int qIndex = 2; // Qi's placering
+		int sourceIndex = 0;
 		int fGames = 0;
-		// Indsæt ikke begge stedet. Placering betyder retning!
-		for (int i = 0; i < fTeams.length; i++) { // løber teams igennem
+		
+		//Løber teams igennem
+		for (int i = 0; i < fSize; i++) { 
 
 			int pointsToGive = 0;
-			// kamp starter ved index 3 - kan ikke spille imod sig selv
-			for (int j = i + qSize; j < capacities.length - qSize; j++) { 
+			//Kampe starter ved index 2 - kan ikke spille imod sig selv => 2+1 = index 3
+			for (int j = i + 3; j < capacities.length - qSize; j++) { 
 				pointsToGive = fTeams[i][j] * 2;
 				// Edges source -> Q(index)
-				capacities[sourceIndex][index] = pointsToGive;
-				capacities[index][sourceIndex] = pointsToGive;
+				capacities[sourceIndex][qIndex] = pointsToGive;
+				
 				fGames += pointsToGive;
 				
 				// Edges Q(index) -> Fi og Fj.
-				capacities[index][i + 4] = pointsToGive;
-				//capacities[i + 4][index] = pointsToGive;
-				capacities[index][j + 2] = pointsToGive;
-				//capacities[j + 2][index] = pointsToGive;
-				index++;
+				//F sættet begynder efter source, sink og Q
+				capacities[qIndex][i + (2+qSize)] = pointsToGive;
+				//Der er allerde lagt 2 til j, så flytter blot Q her
+				capacities[qIndex][j + qSize] = pointsToGive;
+				
+				qIndex++;
 			}
 		}
 		int sinkIndex = 1;
-		index = capacities.length - fTeams.length;
+		qIndex = capacities.length - fTeams.length;
 		// Edges Fi -> sink (indsæt i for-løkken ovenfor)
 		for (int k = 0; k < fTeams.length; k++) {
-			capacities[index][sinkIndex] = fTeams[k][fTeams[0].length - 1];
-			capacities[sinkIndex][index] = fTeams[k][fTeams[0].length - 1];
-			index++;
+			capacities[qIndex][sinkIndex] = fTeams[k][fTeams[0].length - 1];
+			//capacities[sinkIndex][index] = fTeams[k][fTeams[0].length - 1];
+			qIndex++;
 		}
 		return fGames;
 	}
@@ -224,7 +234,6 @@ public class HandballFlowNetwork {
 	public static int factorial(int f) {
 	    return ((f == 0) ? 1 : f * factorial(f - 1));
 	}  
-	
 	
 	private void printTable(int[][] table) {
 		for (int i = 0; i < table.length; i++) {

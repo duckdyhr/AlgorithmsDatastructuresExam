@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class App {
 	public static void main(String[] args) throws FileNotFoundException {
-		Scanner scan = new Scanner(new File("InputHandballElimination.txt"));
+		Scanner scan = new Scanner(new File("Input2HandballElimination.txt"));
 		String input = "";
 		while(scan.hasNextLine()){
 			input += scan.nextLine();
