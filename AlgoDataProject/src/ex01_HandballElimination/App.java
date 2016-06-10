@@ -7,13 +7,15 @@ import java.util.Scanner;
 
 public class App {
 	public static void main(String[] args) throws FileNotFoundException {
-		Scanner scan = new Scanner(new File("Input2HandballElimination.txt"));
+		Scanner scan = new Scanner(new File("InputHandballElimination.txt"));
 		String input = "";
 		while(scan.hasNextLine()){
 			input += scan.nextLine();
 		}
 		scan.close();
+		
 		System.out.println(input);
+		
 		ArrayList<String> teams = new ArrayList<>();
 		String team = "";
 		for(char c : input.toCharArray()){
@@ -26,22 +28,13 @@ public class App {
 			}else{
 				team += c;				
 			}
-			
 		}
+		
+		//Tester for hvert hold om det er elimineret
 		for(int i = 0; i < teams.size(); i++){
 			String candidate = teams.get(i);
 			System.out.println("\nTeam " + candidate.substring(0, candidate.indexOf(" ")));
 			new HandballFlowNetwork(new ArrayList<String>(teams), i);
 		}
-		/*
-		System.out.println("Team Atlanta");
-		new HandballFlowNetwork(new ArrayList<String>(teams), 0);
-		System.out.println("\nTeam Philadelphia");
-		new HandballFlowNetwork(new ArrayList<String>(teams), 1);
-		System.out.println("\nTeam New York");
-		new HandballFlowNetwork(new ArrayList<String>(teams), 2);
-		System.out.println("\nTeam Montreal");
-		new HandballFlowNetwork(new ArrayList<String>(teams), 3);
-		*/
 	}
 }

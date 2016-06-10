@@ -18,8 +18,8 @@ public class HandballFlowNetwork {
 	
 	public HandballFlowNetwork(ArrayList<String> input, int indexTeamToEvaluate) {
 		generateFTeams(input, indexTeamToEvaluate);
-		//System.out.println("fTeams");
-		//printTable(fTeams);
+		System.out.println("fTeams");
+		printTable(fTeams);
 
 		//Antal kampe mellem fTeams Q-sættet...
 		qSize = numberOfCombinations(fTeams.length);
@@ -47,6 +47,7 @@ public class HandballFlowNetwork {
 		}else{
 			System.out.println("Team er elimineret");
 		}
+		System.out.println("********************************************************************");
 	}
 
 	// Løber capacities igennem, og optimerer flow, hvis muligt...
@@ -220,7 +221,6 @@ public class HandballFlowNetwork {
 		// Edges Fi -> sink (indsæt i for-løkken ovenfor)
 		for (int k = 0; k < fTeams.length; k++) {
 			capacities[qIndex][sinkIndex] = fTeams[k][fTeams[0].length - 1];
-			//capacities[sinkIndex][index] = fTeams[k][fTeams[0].length - 1];
 			qIndex++;
 		}
 		return fGames;
