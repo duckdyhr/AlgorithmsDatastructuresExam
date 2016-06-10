@@ -13,10 +13,10 @@ public class PhoneListValidation {
 	
 	public boolean isValidPhonelist(ArrayList<String> list){
 		Collections.sort(list, comparator);
-		System.out.println("Sorted: " + Arrays.toString(list.toArray()));
+		//System.out.println("Sorted: " + Arrays.toString(list.toArray()));
 		//stop ved index af første af længste phone number...
 		int until = firstIndexLongestNum(list);
-		System.out.println("until: " + until);
+		//System.out.println("until: " + until);
 		for(int i = 0; i < until; i++){
 			String num1 = list.get(i);
 			//denne løkke skal køre hele arraylisten igennem
